@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: transaction-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/transaction_db?createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: transaction-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: "java.util.HashMap"
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.use.type.headers: true
+        spring.json.type.mapping: transactionEvent:com.banking.transactionservice.event.TransactionInitiatedEvent
+
+
+server:
+  port: 8082
+
+account:
+  service:
+    url: ${ACCOUNT_SERVICE_URL:http://account-service:8081}
+
+payment:
+  service:
+    url: ${PAYMENT_SERVICE_URL:http://payment-service:8084}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info

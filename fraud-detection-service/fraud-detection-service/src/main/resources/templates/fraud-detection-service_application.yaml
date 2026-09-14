@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: fraud-detection-service
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: fraud-detection-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: true
+        spring.json.type.mapping: transactionEvent:com.banking.frauddetectionservice.event.TransactionInitiatedEvent
+        spring.json.value.default.type: "java.util.HashMap"
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+account:
+  service:
+    url: ${ACCOUNT_SERVICE_URL:http://account-service:8081}
+
+server:
+  port: 8083
+
+management:
+endpoints:
+  web:
+    exposure:
+      include: health, info
