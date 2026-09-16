@@ -30,7 +30,7 @@ services:
       - banking-network
 
   transaction-service:
-    image: transaction-service:kafka
+    image: transaction-service:latest
     container_name: transaction-service
     ports:
       - "8082:8082"
@@ -62,7 +62,7 @@ services:
       - banking-network
 
   fraud-detection-service:
-    image: fraud-detection-service:kafka
+    image: fraud-detection-service:latest
     container_name: fraud-detection-service
     ports:
       - "8083:8083"
@@ -87,7 +87,7 @@ services:
       - banking-network
 
   notification-service:
-    image: notification-service:kafka
+    image: notification-service:latest
     container_name: notification-service
     ports:
       - "8085:8085"
@@ -112,7 +112,7 @@ services:
       - banking-network
 
   payment-service:
-    image: payment-service:kafka
+    image: payment-service:latest
     container_name: payment-service
     ports:
       - "8084:8084"
@@ -132,17 +132,17 @@ services:
       - banking-network
 
   api-gateway:
-    image: api-gateway:redis
+    image: api-gateway:latest
     container_name: api-gateway
     ports:
       - "9090:9090"
     environment:
       # Redis Connection
-      REDIS_HOST: lasting-hound-280262.upstash.io
-      REDIS_PORT: 6379
-      REDIS_USERNAME: default
-      REDIS_PASSWORD: gQAAAAAABEbGAAIgcDI0ZmZmZmQ2OTY4MDA0YjJmODcxMjBjMjU0NjVhY2Q2Yg
-      REDIS_SSL_ENABLED: "true"
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_USERNAME: ${REDIS_USERNAME}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_SSL_ENABLED: ${REDIS_SSL_ENABLED}
 
       ACCOUNT_SERVICE_URL: http://account-service:8081
       TRANSACTION_SERVICE_URL: http://transaction-service:8082
