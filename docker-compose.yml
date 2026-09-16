@@ -8,22 +8,22 @@ services:
       - "8081:8081"
     environment:
       # Postgres connection
-      DB_HOST: ep-purple-bar-b4c4htfu-pooler.c-6.us-east-2.aws.neon.tech
-      DB_PORT: 5432
-      DB_USERNAME: neondb_owner
-      DB_PASSWORD: npg_ykrtXng8U3vJ
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: account_db
 
       # Redis Connection
-      REDIS_HOST: lasting-hound-280262.upstash.io
-      REDIS_PORT: 6379
-      REDIS_USERNAME: default
-      REDIS_PASSWORD: gQAAAAAABEbGAAIgcDI0ZmZmZmQ2OTY4MDA0YjJmODcxMjBjMjU0NjVhY2Q2Yg
-      REDIS_SSL_ENABLED: "true"
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_USERNAME: ${REDIS_USERNAME}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_SSL_ENABLED: ${REDIS_SSL_ENABLED}
 
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: lkc-6kgmpoj.ap-south-1.aws.public.confluent.cloud:9092
-      SPRING_KAFKA_JAAS_USERNAME: G2RDBMUEILYMN4T2
-      SPRING_KAFKA_JAAS_PASSWORD: cfltzbpMia1Db9Vvwo0iUaQG7SkcAAedbi3FK+LzKsTIOvQuLesOgUE0QMX4u4fw
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+      SPRING_KAFKA_JAAS_USERNAME: ${SPRING_KAFKA_JAAS_USERNAME}
+      SPRING_KAFKA_JAAS_PASSWORD: ${SPRING_KAFKA_JAAS_PASSWORD}
       JAVA_TOOL_OPTIONS: "-Xms192m -Xmx256m"
     mem_limit: 400m
     networks:
@@ -36,22 +36,22 @@ services:
       - "8082:8082"
     environment:
       # Postgres connection
-      DB_HOST: ep-purple-bar-b4c4htfu-pooler.c-6.us-east-2.aws.neon.tech
-      DB_PORT: 5432
-      DB_USERNAME: neondb_owner
-      DB_PASSWORD: npg_ykrtXng8U3vJ
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: transaction_db
 
       # Redis Connection
-      REDIS_HOST: lasting-hound-280262.upstash.io
-      REDIS_PORT: 6379
-      REDIS_USERNAME: default
-      REDIS_PASSWORD: gQAAAAAABEbGAAIgcDI0ZmZmZmQ2OTY4MDA0YjJmODcxMjBjMjU0NjVhY2Q2Yg
-      REDIS_SSL_ENABLED: "true"
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_USERNAME: ${REDIS_USERNAME}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_SSL_ENABLED: ${REDIS_SSL_ENABLED}
 
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: lkc-6kgmpoj.ap-south-1.aws.public.confluent.cloud:9092
-      SPRING_KAFKA_JAAS_USERNAME: G2RDBMUEILYMN4T2
-      SPRING_KAFKA_JAAS_PASSWORD: cfltzbpMia1Db9Vvwo0iUaQG7SkcAAedbi3FK+LzKsTIOvQuLesOgUE0QMX4u4fw
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+      SPRING_KAFKA_JAAS_USERNAME: ${SPRING_KAFKA_JAAS_USERNAME}
+      SPRING_KAFKA_JAAS_PASSWORD: ${SPRING_KAFKA_JAAS_PASSWORD}
       ACCOUNT_SERVICE_URL: http://account-service:8081
       JAVA_TOOL_OPTIONS: "-Xms192m -Xmx256m"
     mem_limit: 400m
@@ -68,14 +68,15 @@ services:
       - "8083:8083"
     environment:
       # Redis Connection
-      REDIS_HOST: lasting-hound-280262.upstash.io
-      REDIS_PORT: 6379
-      REDIS_USERNAME: default
-      REDIS_PASSWORD: gQAAAAAABEbGAAIgcDI0ZmZmZmQ2OTY4MDA0YjJmODcxMjBjMjU0NjVhY2Q2Yg
-      REDIS_SSL_ENABLED: "true"
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: lkc-6kgmpoj.ap-south-1.aws.public.confluent.cloud:9092
-      SPRING_KAFKA_JAAS_USERNAME: G2RDBMUEILYMN4T2
-      SPRING_KAFKA_JAAS_PASSWORD: cfltzbpMia1Db9Vvwo0iUaQG7SkcAAedbi3FK+LzKsTIOvQuLesOgUE0QMX4u4fw
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_USERNAME: ${REDIS_USERNAME}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_SSL_ENABLED: ${REDIS_SSL_ENABLED}
+      #Kafka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+      SPRING_KAFKA_JAAS_USERNAME: ${SPRING_KAFKA_JAAS_USERNAME}
+      SPRING_KAFKA_JAAS_PASSWORD: ${SPRING_KAFKA_JAAS_PASSWORD}
       ACCOUNT_SERVICE_URL: http://account-service:8081
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx192m"
     mem_limit: 350m
@@ -92,14 +93,15 @@ services:
       - "8085:8085"
     environment:
       # Redis Connection
-      REDIS_HOST: lasting-hound-280262.upstash.io
-      REDIS_PORT: 6379
-      REDIS_USERNAME: default
-      REDIS_PASSWORD: gQAAAAAABEbGAAIgcDI0ZmZmZmQ2OTY4MDA0YjJmODcxMjBjMjU0NjVhY2Q2Yg
-      REDIS_SSL_ENABLED: "true"
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: lkc-6kgmpoj.ap-south-1.aws.public.confluent.cloud:9092
-      SPRING_KAFKA_JAAS_USERNAME: G2RDBMUEILYMN4T2
-      SPRING_KAFKA_JAAS_PASSWORD: cfltzbpMia1Db9Vvwo0iUaQG7SkcAAedbi3FK+LzKsTIOvQuLesOgUE0QMX4u4fw
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_USERNAME: ${REDIS_USERNAME}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_SSL_ENABLED: ${REDIS_SSL_ENABLED}
+      # Kafka
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+      SPRING_KAFKA_JAAS_USERNAME: ${SPRING_KAFKA_JAAS_USERNAME}
+      SPRING_KAFKA_JAAS_PASSWORD: ${SPRING_KAFKA_JAAS_PASSWORD}
       ACCOUNT_SERVICE_URL: http://account-service:8081
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx192m"
     mem_limit: 350m
@@ -116,14 +118,14 @@ services:
       - "8084:8084"
     environment:
       # Postgres connection
-      DB_HOST: ep-purple-bar-b4c4htfu-pooler.c-6.us-east-2.aws.neon.tech
-      DB_PORT: 5432
-      DB_USERNAME: neondb_owner
-      DB_PASSWORD: npg_ykrtXng8U3vJ
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: payment_db
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: lkc-6kgmpoj.ap-south-1.aws.public.confluent.cloud:9092
-      SPRING_KAFKA_JAAS_USERNAME: G2RDBMUEILYMN4T2
-      SPRING_KAFKA_JAAS_PASSWORD: cfltzbpMia1Db9Vvwo0iUaQG7SkcAAedbi3FK+LzKsTIOvQuLesOgUE0QMX4u4fw
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+      SPRING_KAFKA_JAAS_USERNAME: ${SPRING_KAFKA_JAAS_USERNAME}
+      SPRING_KAFKA_JAAS_PASSWORD: ${SPRING_KAFKA_JAAS_PASSWORD}
       JAVA_TOOL_OPTIONS: "-Xms192m -Xmx256m"
     mem_limit: 400m
     networks:
