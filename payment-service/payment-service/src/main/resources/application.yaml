@@ -13,6 +13,12 @@ spring:
 
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    properties:
+      # Mandatory security configurations for Confluent Cloud
+      security.protocol: SASL_SSL
+      sasl.mechanism: PLAIN
+      # Inject username and password securely from environment variables
+      sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${SPRING_KAFKA_JAAS_USERNAME}" password="${SPRING_KAFKA_JAAS_PASSWORD}";
     consumer:
       group-id: account-service-group
       auto-offset-reset: earliest
