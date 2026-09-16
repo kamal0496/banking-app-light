@@ -6,6 +6,12 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      # NEW: Upstash requires authenticating using your password token
+      username: ${REDIS_USERNAME:default}
+      password: ${REDIS_PASSWORD:}
+      # NEW: Mandatory flag to encrypt traffic to the cloud database
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:true}
 
   cloud:
     gateway:

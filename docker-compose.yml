@@ -1,16 +1,6 @@
 version: '3.8'
 
 services:
-
-  redis:
-    image: redis:latest
-    container_name: redis
-    ports:
-      - "6379:6379"
-    mem_limit: 100m
-    networks:
-      - banking-network
-
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     container_name: zookeeper
@@ -57,40 +47,54 @@ services:
       start_period: 40s
 
   account-service:
-    image: account-service:latest
+    image: account-service:redis
     container_name: account-service
     ports:
       - "8081:8081"
     environment:
+      # Postgres connection
       DB_HOST: ep-purple-bar-b4c4htfu-pooler.c-6.us-east-2.aws.neon.tech
       DB_PORT: 5432
       DB_USERNAME: neondb_owner
       DB_PASSWORD: npg_ykrtXng8U3vJ
       DB_NAME: account_db
+
+      # Redis Connection
+      REDIS_HOST: lasting-hound-280262.upstash.io
+      REDIS_PORT: 6379
+      REDIS_USERNAME: default
+      REDIS_PASSWORD: gQAAAAAABEbGAAIgcDI0ZmZmZmQ2OTY4MDA0YjJmODcxMjBjMjU0NjVhY2Q2Yg
+      REDIS_SSL_ENABLED: "true"
+
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       JAVA_TOOL_OPTIONS: "-Xms192m -Xmx256m"
     mem_limit: 400m
     depends_on:
-      redis:
-        condition: service_started
       kafka:
         condition: service_healthy
     networks:
       - banking-network
 
   transaction-service:
-    image: transaction-service:latest
+    image: transaction-service:redis
     container_name: transaction-service
     ports:
       - "8082:8082"
     environment:
+      # Postgres connection
       DB_HOST: ep-purple-bar-b4c4htfu-pooler.c-6.us-east-2.aws.neon.tech
       DB_PORT: 5432
       DB_USERNAME: neondb_owner
       DB_PASSWORD: npg_ykrtXng8U3vJ
       DB_NAME: transaction_db
-      REDIS_HOST: redis
+
+      # Redis Connection
+      REDIS_HOST: lasting-hound-280262.upstash.io
       REDIS_PORT: 6379
+      REDIS_USERNAME: default
+      REDIS_PASSWORD: gQAAAAAABEbGAAIgcDI0ZmZmZmQ2OTY4MDA0YjJmODcxMjBjMjU0NjVhY2Q2Yg
+      REDIS_SSL_ENABLED: "true"
+
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       ACCOUNT_SERVICE_URL: http://account-service:8081
       JAVA_TOOL_OPTIONS: "-Xms192m -Xmx256m"
@@ -98,21 +102,23 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-      redis:
-        condition: service_started
       account-service:
         condition: service_started
     networks:
       - banking-network
 
   fraud-detection-service:
-    image: fraud-detection-service:latest
+    image: fraud-detection-service:redis
     container_name: fraud-detection-service
     ports:
       - "8083:8083"
     environment:
-      REDIS_HOST: redis
+      # Redis Connection
+      REDIS_HOST: lasting-hound-280262.upstash.io
       REDIS_PORT: 6379
+      REDIS_USERNAME: default
+      REDIS_PASSWORD: gQAAAAAABEbGAAIgcDI0ZmZmZmQ2OTY4MDA0YjJmODcxMjBjMjU0NjVhY2Q2Yg
+      REDIS_SSL_ENABLED: "true"
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       ACCOUNT_SERVICE_URL: http://account-service:8081
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx192m"
@@ -120,21 +126,23 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-      redis:
-        condition: service_started
       account-service:
         condition: service_started
     networks:
       - banking-network
 
   notification-service:
-    image: notification-service:latest
+    image: notification:redis
     container_name: notification-service
     ports:
       - "8085:8085"
     environment:
-      REDIS_HOST: redis
+      # Redis Connection
+      REDIS_HOST: lasting-hound-280262.upstash.io
       REDIS_PORT: 6379
+      REDIS_USERNAME: default
+      REDIS_PASSWORD: gQAAAAAABEbGAAIgcDI0ZmZmZmQ2OTY4MDA0YjJmODcxMjBjMjU0NjVhY2Q2Yg
+      REDIS_SSL_ENABLED: "true"
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       ACCOUNT_SERVICE_URL: http://account-service:8081
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx192m"
@@ -142,19 +150,18 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-      redis:
-        condition: service_started
       account-service:
         condition: service_started
     networks:
       - banking-network
 
   payment-service:
-    image: payment-service:latest
+    image: payment-service:redis
     container_name: payment-service
     ports:
       - "8084:8084"
     environment:
+      # Postgres connection
       DB_HOST: ep-purple-bar-b4c4htfu-pooler.c-6.us-east-2.aws.neon.tech
       DB_PORT: 5432
       DB_USERNAME: neondb_owner
@@ -170,13 +177,18 @@ services:
       - banking-network
 
   api-gateway:
-    image: api-gateway:latest
+    image: api-gateway:redis
     container_name: api-gateway
     ports:
       - "9090:9090"
     environment:
-      REDIS_HOST: redis
+      # Redis Connection
+      REDIS_HOST: lasting-hound-280262.upstash.io
       REDIS_PORT: 6379
+      REDIS_USERNAME: default
+      REDIS_PASSWORD: gQAAAAAABEbGAAIgcDI0ZmZmZmQ2OTY4MDA0YjJmODcxMjBjMjU0NjVhY2Q2Yg
+      REDIS_SSL_ENABLED: "true"
+
       ACCOUNT_SERVICE_URL: http://account-service:8081
       TRANSACTION_SERVICE_URL: http://transaction-service:8082
       PAYMENT_SERVICE_URL: http://payment-service:8084
