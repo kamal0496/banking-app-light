@@ -11,20 +11,6 @@ services:
     networks:
       - banking-network
 
-  postgres:
-    image: postgres:15
-    container_name: postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    mem_limit: 250m
-    networks:
-      - banking-network
-
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     container_name: zookeeper
@@ -76,16 +62,15 @@ services:
     ports:
       - "8081:8081"
     environment:
-      DB_HOST: postgres
+      DB_HOST: ep-purple-bar-b4c4htfu-pooler.c-6.us-east-2.aws.neon.tech
       DB_PORT: 5432
-      DB_USERNAME: postgres
-      DB_PASSWORD: root
+      DB_USERNAME: neondb_owner
+      DB_PASSWORD: npg_ykrtXng8U3vJ
+      DB_NAME: account_db
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       JAVA_TOOL_OPTIONS: "-Xms192m -Xmx256m"
     mem_limit: 400m
     depends_on:
-      postgres:
-        condition: service_started
       redis:
         condition: service_started
       kafka:
@@ -99,10 +84,11 @@ services:
     ports:
       - "8082:8082"
     environment:
-      DB_HOST: postgres
+      DB_HOST: ep-purple-bar-b4c4htfu-pooler.c-6.us-east-2.aws.neon.tech
       DB_PORT: 5432
-      DB_USERNAME: postgres
-      DB_PASSWORD: root
+      DB_USERNAME: neondb_owner
+      DB_PASSWORD: npg_ykrtXng8U3vJ
+      DB_NAME: transaction_db
       REDIS_HOST: redis
       REDIS_PORT: 6379
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -110,8 +96,6 @@ services:
       JAVA_TOOL_OPTIONS: "-Xms192m -Xmx256m"
     mem_limit: 400m
     depends_on:
-      postgres:
-        condition: service_started
       kafka:
         condition: service_healthy
       redis:
@@ -134,8 +118,6 @@ services:
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx192m"
     mem_limit: 350m
     depends_on:
-      postgres:
-        condition: service_started
       kafka:
         condition: service_healthy
       redis:
@@ -158,8 +140,6 @@ services:
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx192m"
     mem_limit: 350m
     depends_on:
-      postgres:
-        condition: service_started
       kafka:
         condition: service_healthy
       redis:
@@ -175,16 +155,15 @@ services:
     ports:
       - "8084:8084"
     environment:
-      DB_HOST: postgres
+      DB_HOST: ep-purple-bar-b4c4htfu-pooler.c-6.us-east-2.aws.neon.tech
       DB_PORT: 5432
-      DB_USERNAME: postgres
-      DB_PASSWORD: root
+      DB_USERNAME: neondb_owner
+      DB_PASSWORD: npg_ykrtXng8U3vJ
+      DB_NAME: payment_db
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       JAVA_TOOL_OPTIONS: "-Xms192m -Xmx256m"
     mem_limit: 400m
     depends_on:
-      postgres:
-        condition: service_started
       kafka:
         condition: service_healthy
     networks:
