@@ -1,0 +1,304 @@
+# Banking Microservices Application
+
+This repository contains a Spring Boot-based banking microservice system built to simulate a real-world digital banking flow with account management, transaction processing, fraud detection, payment integration, and notifications.
+
+The architecture follows an event-driven microservices pattern using:
+- Spring Boot 3 / Java
+- PostgreSQL for service data stores
+- Redis for OTP and transient data
+- Apache Kafka for async communication between services
+- Feign clients for synchronous service-to-service calls
+- Razorpay for payment order creation and webhook processing
+- Docker Compose for service orchestration
+
+## 1. Project Structure
+
+At the root of the project:
+- account-service
+- transaction-service
+- payment-service
+- fraud-detection-service
+- notification-service
+- api-gateway
+- docker-compose.yml
+- .env
+
+## 2. Services Overview
+
+### 2.1 account-service
+Port: 8081
+
+Responsibilities:
+- Create bank accounts
+- Fetch account details and balances
+- Credit and deduct balances
+- Block/unblock accounts
+- Maintain account status and daily transaction limits
+
+Data Store:
+- PostgreSQL database (`account_db`)
+
+Key APIs:
+- GET /api/v1/accounts
+- POST /api/v1/accounts
+- GET /api/v1/accounts/{accountNumber}
+- GET /api/v1/accounts/{accountNumber}/balance
+- PUT /api/v1/accounts/{accountNumber}/block
+- PUT /api/v1/accounts/{accountNumber}/unblock
+- PUT /api/v1/accounts/{accountNumber}/deduct
+- PUT /api/v1/accounts/{accountNumber}/credit
+
+### 2.2 transaction-service
+Port: 8082
+
+Responsibilities:
+- Transfer money between accounts
+- Handle transfer-with-payment flow
+- Validate OTP for suspicious transactions
+- Store transaction history and statuses
+- Publish and consume Kafka events
+- Coordinate payment and fraud workflows
+
+Data Store:
+- PostgreSQL database (`transaction_db`)
+- Redis (OTP storage and verification)
+
+Key APIs:
+- POST /api/v1/transactions/transfer
+- POST /api/v1/transactions/transfer-with-payment
+- GET /api/v1/transactions/{transactionId}
+- GET /api/v1/transactions/history/{accountNumber}
+- POST /api/v1/transactions/{transactionId}/verify
+
+### 2.3 payment-service
+Port: 8084
+
+Responsibilities:
+- Create Razorpay orders for transactions
+- Keep payment records in the database
+- Receive Razorpay webhook events
+- Emit payment.completed and payment.failed events to Kafka
+
+Data Store:
+- PostgreSQL database (`payment_db`)
+
+Key APIs:
+- POST /api/v1/payments/create-order
+- POST /api/v1/payments/webhook
+
+### 2.4 fraud-detection-service
+Port: 8083
+
+Responsibilities:
+- Listen to transaction initiation events
+- Check sender balance and determine if a transaction seems suspicious
+- Trigger verification-required flow for risky transactions
+- Publish fraud.clean or verification events based on result
+
+Kafka interaction:
+- Consumes: transaction.initiated
+- Produces: verification.required, fraud.check.clean
+
+### 2.5 notification-service
+Port: 8085
+
+Responsibilities:
+- Consume event notifications from Kafka
+- Send alerts/log notifications for OTP generation, transaction status, refunds, fraud alerts, and payment results
+
+Kafka interaction:
+- Consumes:
+  - transaction.otp.generated
+  - transaction.completed
+  - fraud.detected
+  - transaction.refunded
+  - payment.completed
+  - payment.failed
+
+This service is mainly a notification/logging layer in the current implementation and logs alerts to the application console instead of sending real emails/SMS.
+
+### 2.6 api-gateway
+Port: 9090
+
+Responsibilities:
+- Central entry point for client-facing requests
+- Exposes routing to downstream microservices
+- Connects to account-service, transaction-service, and payment-service
+
+## 3. Technology Stack
+
+- Java 17 / Spring Boot 3.x
+- PostgreSQL
+- Redis
+- Kafka
+- OpenFeign
+- Razorpay Java SDK
+- Docker Compose
+
+## 4. Infrastructure and Configuration
+
+The application uses environment variables defined in `.env` and wired through `docker-compose.yml`.
+
+Important variables include:
+- DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD
+- REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD, REDIS_SSL_ENABLED
+- SPRING_KAFKA_BOOTSTRAP_SERVERS
+- SPRING_KAFKA_JAAS_USERNAME
+- SPRING_KAFKA_JAAS_PASSWORD
+
+Service dependencies are configured in docker-compose.yml, where the services are placed in a shared Docker network named `banking-network`.
+
+## 5. Application Workflow
+
+### 5.1 Standard bank transfer workflow
+
+1. Client calls the API Gateway or directly calls transaction-service.
+2. Request reaches transaction-service at:
+   - POST /api/v1/transactions/transfer
+3. The service deducts the sender balance from account-service through Feign.
+4. A Transaction record is created with status `PROCESSING`.
+5. transaction-service publishes a `transaction.initiated` Kafka event.
+6. fraud-detection-service listens to this topic and evaluates the transaction.
+7. Fraud check result:
+   - If clean: it emits `fraud.check.clean`
+   - If suspicious: it emits `verification.required`
+8. If the transaction is suspicious,
+   - transaction-service consumes `verification.required`
+   - generates a 6-digit OTP
+   - stores it in Redis with a 5-minute expiry
+   - emits `transaction.otp.generated`
+   - notification-service consumes the OTP event and logs/alerts the user
+9. The client verifies the transaction by calling:
+   - POST /api/v1/transactions/{transactionId}/verify?otp=XXXXXX
+10. If OTP is valid:
+   - transaction is marked `COMPLETED`
+   - transaction.completed event is emitted
+   - account-service credits the receiver and notification-service informs the user
+11. If OTP is invalid or expired:
+   - the transaction is failed
+   - sender account is blocked or flagged as suspicious
+   - refund is triggered
+   - fraud.detected and transaction.refunded events are emitted
+
+### 5.2 Transfer with Razorpay payment workflow
+
+This flow is used when a transaction requires payment capture before settlement.
+
+1. Client calls:
+   - POST /api/v1/transactions/transfer-with-payment
+2. transaction-service creates a transaction in `PAYMENT_PENDING` state.
+3. It sends a payment order creation request to payment-service.
+4. payment-service uses Razorpay to create an order and returns the order ID and public key details.
+5. The frontend completes the Razorpay payment.
+6. Razorpay sends a webhook to payment-service at:
+   - POST /api/v1/payments/webhook
+7. payment-service validates the event and updates the payment record.
+8. It publishes:
+   - payment.completed
+   - payment.failed
+9. transaction-service consumes these events and either:
+   - completes the transfer and credits/debits accounts
+   - marks the transfer as failed and triggers refund logic
+10. notification-service logs all payment and refund outcomes.
+
+### 5.3 Payment success/failure events
+
+On successful payment:
+- payment-service publishes `payment.completed`
+- notification-service sends a payment success alert
+- transaction-service completes the transfer ledger operations
+
+On failed payment:
+- payment-service publishes `payment.failed`
+- notification-service sends a failure alert
+- transaction-service marks the transaction as failed and emits a refund event
+
+## 6. Core Event Topics
+
+The application uses Kafka topics such as:
+- transaction.initiated
+- verification.required
+- transaction.otp.generated
+- fraud.check.clean
+- transaction.completed
+- fraud.detected
+- transaction.refunded
+- payment.completed
+- payment.failed
+
+## 7. How to Run the Application
+
+### Prerequisites
+- Docker and Docker Compose installed
+- Java 17+ if running services directly
+- PostgreSQL and Redis available if not using Docker-managed configuration
+
+### Run with Docker Compose
+From the project root:
+
+```bash
+docker-compose up -d
+```
+
+This starts all services and their required network environment.
+
+### Service endpoints after startup
+- Account Service: http://localhost:8081
+- Transaction Service: http://localhost:8082
+- Fraud Detection Service: http://localhost:8083
+- Payment Service: http://localhost:8084
+- Notification Service: http://localhost:8085
+- API Gateway: http://localhost:9090
+
+## 8. Example Request Flow
+
+### Create a new account
+```bash
+curl -X POST http://localhost:8081/api/v1/accounts \
+  -H "Content-Type: application/json" \
+  -d '{
+    "accountHolderName": "John Doe",
+    "email": "john@example.com",
+    "phone": "9876543210",
+    "initialDeposit": 10000,
+    "accountType": "SAVING"
+  }'
+```
+
+### Transfer money
+```bash
+curl -X POST http://localhost:8082/api/v1/transactions/transfer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "senderAccountNumber": "123456789012",
+    "receiverAccountNumber": "987654321098",
+    "amount": 1000,
+    "description": "Wallet transfer",
+    "currency": "INR"
+  }'
+```
+
+### Verify OTP
+```bash
+curl -X POST "http://localhost:8082/api/v1/transactions/{transactionId}/verify?otp=123456"
+```
+
+## 9. Design Notes
+
+This application demonstrates a practical microservice pattern where:
+- each service owns its own DB and responsibility
+- asynchronous events decouple the interaction between services
+- Redis handles short-lived security checks like OTPs
+- Kafka provides reliable event-driven coordination
+- external payment systems (Razorpay) are integrated behind a dedicated payment service
+
+## 10. Notes and Caveats
+
+- This is a demo/learning application; some notification logic is simulated via logs.
+- Fraud detection currently uses a simple random-risk decision and is intended as a sample implementation.
+- Sensitive credentials and cloud service values are managed through `.env` and should never be committed to a shared public repository.
+- The API gateway is configured as a gateway layer but may need additional routing or security hardening for production deployment.
+
+## 11. Summary
+
+This banking app models a secure and event-driven payment flow across multiple services. The key idea is to separate account operations, transaction processing, fraud checks, payment capture, and notifications while coordinating them through Kafka and HTTP calls. This makes the system scalable, modular, and easier to extend with additional banking features such as user authentication, audit logs, or real SMS/email delivery.

@@ -56,6 +56,7 @@ public class PaymentService {
         // Implementation for creating payment order
         log.info("Creating payment order for request: {}", request);
 
+        log.info("Initializing Razorpay with Key: {} and Secret: {}", keyId, keySecret);
         RazorpayClient razorpayClient = new RazorpayClient(keyId, keySecret);
         //converted amount
         int convertedAmount = request.getAmount().multiply(BigDecimal.valueOf(100)).intValue();
