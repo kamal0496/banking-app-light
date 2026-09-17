@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   account-service:
-    image: account-service:kafka
+    image: account-service:latest
     container_name: account-service
     ports:
       - "8081:8081"
@@ -123,6 +123,9 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: payment_db
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
       SPRING_KAFKA_JAAS_USERNAME: ${SPRING_KAFKA_JAAS_USERNAME}
       SPRING_KAFKA_JAAS_PASSWORD: ${SPRING_KAFKA_JAAS_PASSWORD}
@@ -132,7 +135,7 @@ services:
       - banking-network
 
   api-gateway:
-    image: api-gateway:latest
+    image: api-gateway:lastest
     container_name: api-gateway
     ports:
       - "9090:9090"
