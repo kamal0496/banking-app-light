@@ -11,6 +11,7 @@ import jdk.jfr.Registered;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -79,6 +80,7 @@ public class AccountService {
 
     }
 
+    @Cacheable(cacheNames = "accounts", key="#accountNumber")
     public AccountResponse getAccount(String accountNumber) {
         log.info("Get Account: {}", accountNumber);
         Account account = repo.findByAccountNumber(accountNumber).orElseThrow(() -> new RuntimeException("Account not found for: " + accountNumber));

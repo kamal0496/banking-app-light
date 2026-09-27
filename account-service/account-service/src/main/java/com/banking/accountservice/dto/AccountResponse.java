@@ -2,8 +2,10 @@ package com.banking.accountservice.dto;
 
 import com.banking.accountservice.entity.AccountStatus;
 import com.banking.accountservice.entity.AccountType;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,6 +15,8 @@ import java.time.LocalDate;
 
 @Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AccountResponse {
     private String id;
     private String accountNumber;
