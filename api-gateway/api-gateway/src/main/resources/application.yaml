@@ -2,6 +2,25 @@ spring:
   application:
     name: api-gateway
 
+  security:
+    oauth2:
+      client:
+        registration:
+          auth0:
+            client-id: KsyvXumHsxpuvequAuvjVK1A5ApYE0tH
+            client-secret: _CoQsvB8Pn1HlinRoKvfp64w49a3dvHYGJMNf-Eer1kYiIiNgCVKHDRb8TiWCtqk
+            scope: openid, profile, email
+            # Default redirect-uri is {baseUrl}/login/oauth2/code/{registrationId}
+            # -> http://localhost:8080/login/oauth2/code/auth0
+            # This EXACT URI must be added under "Allowed Callback URLs" in your
+            # Auth0 Application settings.
+        provider:
+          auth0:
+            # Auth0's OIDC discovery document lives at {domain}/.well-known/openid-configuration
+            # Spring Security fetches it at startup and auto-configures authorization,
+            # token, userinfo, and jwk-set URIs from it — no need to hardcode those.
+            issuer-uri: https://dev-j55571gxgfhi2bbo.us.auth0.com/
+
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -22,6 +41,7 @@ spring:
               args:
                 name: Access-Control-Allow-Origin Access-Control-Allow-Credentials
                 strategy: RETAIN_FIRST
+            - TokenRelay=
           globalcors:
             add-to-simple-url-handler-mapping: true
             cors-configurations:

@@ -1,6 +1,11 @@
 spring:
   application:
     name: transaction-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://dev-j55571gxgfhi2bbo.us.auth0.com/
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:transaction_db}?sslmode=require
     username: ${DB_USERNAME:postgres}
@@ -62,3 +67,7 @@ management:
     web:
       exposure:
         include: health, info
+
+app:
+  auth0:
+    audience: https://api.banking.com
