@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   account-service:
-    image: account-service:latest
+    image: account-service:auth
     container_name: account-service
     ports:
       - "8081:8081"
@@ -24,13 +24,16 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
       SPRING_KAFKA_JAAS_USERNAME: ${SPRING_KAFKA_JAAS_USERNAME}
       SPRING_KAFKA_JAAS_PASSWORD: ${SPRING_KAFKA_JAAS_PASSWORD}
+
+      AUTH0_JWT_ISSUER_URI: ${AUTH0_JWT_ISSUER_URI}
+
       JAVA_TOOL_OPTIONS: "-Xms192m -Xmx256m"
     mem_limit: 400m
     networks:
       - banking-network
 
   transaction-service:
-    image: transaction-service:latest
+    image: transaction-service:auth
     container_name: transaction-service
     ports:
       - "8082:8082"
@@ -53,6 +56,8 @@ services:
       SPRING_KAFKA_JAAS_USERNAME: ${SPRING_KAFKA_JAAS_USERNAME}
       SPRING_KAFKA_JAAS_PASSWORD: ${SPRING_KAFKA_JAAS_PASSWORD}
       ACCOUNT_SERVICE_URL: http://account-service:8081
+
+      AUTH0_JWT_ISSUER_URI: ${AUTH0_JWT_ISSUER_URI}
       JAVA_TOOL_OPTIONS: "-Xms192m -Xmx256m"
     mem_limit: 400m
     depends_on:
@@ -62,7 +67,7 @@ services:
       - banking-network
 
   fraud-detection-service:
-    image: fraud-detection-service:latest
+    image: fraud-detection-service:auth
     container_name: fraud-detection-service
     ports:
       - "8083:8083"
@@ -78,6 +83,11 @@ services:
       SPRING_KAFKA_JAAS_USERNAME: ${SPRING_KAFKA_JAAS_USERNAME}
       SPRING_KAFKA_JAAS_PASSWORD: ${SPRING_KAFKA_JAAS_PASSWORD}
       ACCOUNT_SERVICE_URL: http://account-service:8081
+
+      AUTH0_CLIENT_ID: ${AUTH0_CLIENT_ID}
+      AUTH0_CLIENT_SECRET: ${AUTH0_CLIENT_SECRET}
+      AUTH0_TOKEN_URI: ${AUTH0_TOKEN_URI}
+
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx192m"
     mem_limit: 350m
     depends_on:
@@ -135,7 +145,7 @@ services:
       - banking-network
 
   api-gateway:
-    image: api-gateway:lastest
+    image: api-gateway:auth
     container_name: api-gateway
     ports:
       - "9090:9090"
@@ -150,6 +160,9 @@ services:
       ACCOUNT_SERVICE_URL: http://account-service:8081
       TRANSACTION_SERVICE_URL: http://transaction-service:8082
       PAYMENT_SERVICE_URL: http://payment-service:8084
+
+      AUTH0_JWT_ISSUER_URI: ${AUTH0_JWT_ISSUER_URI}
+
       JAVA_TOOL_OPTIONS: "-Xms128m -Xmx192m"
     mem_limit: 350m
     depends_on:

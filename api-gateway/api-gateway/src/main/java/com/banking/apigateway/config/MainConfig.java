@@ -2,54 +2,36 @@ package com.banking.apigateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 
 @Configuration
 @EnableWebFluxSecurity
 public class MainConfig {
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain (ServerHttpSecurity http){
-
-        http.authorizeExchange(exchanges -> exchanges
-                // Public: health check, and the paths Spring Security itself uses
-                // to run the OAuth2 login redirect/callback dance.
-                .pathMatchers(
-                        "/actuator/health/**",
-                        "/login/**",
-                        "/oauth2/**"
-                ).permitAll()
-                .anyExchange().authenticated()
-        )
-        // Same call regardless of provider — Spring Security reads whichever
-        // registration(s) are configured in application.yml (here: "auth0").
-        .oauth2Login(oauth2 -> {})
-        .csrf(csrf -> csrf.disable());
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        http
+                .authorizeExchange(exchanges -> exchanges
+                        // CORS preflight requests never carry a token, so they must pass.
+                        // The gateway's globalcors config answers them.
+                        .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                        .pathMatchers("/actuator/health/**").permitAll()
+                        .anyExchange().authenticated()
+                )
+                // Validates "Authorization: Bearer <jwt>" on every request:
+                // signature, expiry, issuer and audience (configured in application.yml).
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                // Stateless: no WebSession, no SESSION cookie. The token is the only credential.
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                // CSRF protects cookie-based auth. With bearer tokens in a header
+                // there is no ambient credential for a malicious site to abuse.
+                .csrf(ServerHttpSecurity.CsrfSpec::disable);
 
         return http.build();
-    }
-
-    /**
-     * Adds "audience=<your API identifier>" to the authorization request sent to Auth0.
-     * Without this parameter Auth0 returns an opaque access token (only valid for /userinfo).
-     * With it, Auth0 returns a JWT access token whose "aud" claim contains your API identifier.
-     */
-    @Bean
-    public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(
-            ReactiveClientRegistrationRepository clientRegistrationRepository) {
-
-        DefaultServerOAuth2AuthorizationRequestResolver resolver =
-                new DefaultServerOAuth2AuthorizationRequestResolver(clientRegistrationRepository);
-
-        resolver.setAuthorizationRequestCustomizer(customizer ->
-                customizer.additionalParameters(params -> params.put("audience", "https://api.banking.com")));
-
-        return resolver;
     }
 }

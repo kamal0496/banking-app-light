@@ -1,23 +1,12 @@
 package com.banking.apigateway.controller;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 
-import java.util.Map;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 
 public class AppController {
-    @GetMapping("/me")
+    /*@GetMapping("/me")
     public Mono<Map<String, Object>> me(@AuthenticationPrincipal OidcUser user,
                                         @RegisteredOAuth2AuthorizedClient("auth0") OAuth2AuthorizedClient authorizedClient) {
 
@@ -41,5 +30,5 @@ public class AppController {
                         "email", user.getEmail() != null ? user.getEmail() : "(no email scope/claim returned)",
                         "name", user.getFullName() != null ? user.getFullName() : "(no name claim returned)"
                 ));
-    }
+    }*/
 }

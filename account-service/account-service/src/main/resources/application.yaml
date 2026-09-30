@@ -5,7 +5,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://dev-j55571gxgfhi2bbo.us.auth0.com/
+          issuer-uri: ${AUTH0_JWT_ISSUER_URI}
 
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:account_db}?sslmode=require
@@ -65,7 +65,8 @@ logging:
     org:
       springframework:
         cache: TRACE
+        security: DEBUG
 
 app:
   auth0:
-    audience: https://api.banking.com
+    audience: https://bankingapp.com

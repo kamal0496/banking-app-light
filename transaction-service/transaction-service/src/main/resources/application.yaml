@@ -70,4 +70,11 @@ management:
 
 app:
   auth0:
-    audience: https://api.banking.com
+    audience: https://bankingapp.com
+
+logging:
+  level:
+    org:
+      springframework:
+        cache: TRACE
+        security: DEBUG
